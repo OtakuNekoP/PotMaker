@@ -31,13 +31,44 @@ if($isview){
 <meta http-equiv="cache-control" content="no-cache" /> 
 <meta http-equiv="expires" content="0" /> 
 <title>Nyamoe丢锅图生成器 Beta v1.0</title> 
-</head>
-
-<body>
+<!--[if lt IE 6]> 
+<style type="text/css"> 
+.z3_ie_fix{ 
+float:left; 
+} 
+</style> 
+<![endif]--> 
+<style type="text/css"> 
+<!-- 
+body{ 
+background:none; 
+} 
+.passport{ 
+border:1px solid red; 
+background-color:#FFFFCC; 
+width:400px; 
+height:100px; 
+position:absolute; 
+left:49.9%; 
+top:49.9%; 
+margin-left:-200px; 
+margin-top:-55px; 
+font-size:14px; 
+text-align:center; 
+line-height:30px; 
+color:#746A6A; 
+} 
+--> 
+</style> 
+<div class="passport"> 
+<div style="padding-top:20px;"> 
 <form method="post" style="margin:0px;">背锅的QQ 
 <input type="text" name="qq" /> <input type="submit" value="丢锅！" /> 
-</form>  
+</form> 
+处理速度较慢，耐心等待。
+</div> 
+</div> 
 </body> 
-</html> ';
+</html>  ';
 } 
 ?>
