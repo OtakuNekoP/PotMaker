@@ -65,7 +65,7 @@ color:#746A6A;
 <form method="post" style="margin:0px;">背锅的QQ 
 <input type="text" name="qq" /> <input type="submit" value="丢锅！" /> 
 </form> 
-处理速度较慢，耐心等待。
+处理速度较慢，耐心等待。（https://github.com/OtakuNekoP/PotMaker）
 </div> 
 </div> 
 </body> 
