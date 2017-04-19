@@ -1,0 +1,227 @@
+<!--
+    author : XiaoLu(https://github.com/mo10)
+    Date   : 2017/04/19
+-->
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Sticker Maker</title>
+    </head>
+    <body>
+        
+        
+        <div id="view" style="position: absolute; top: 10px; left: 20px;"/></div>
+        <input type="range" id="rangeY" style="left: calc( -176px );top: calc(176px - 10px);transform: rotate(90deg);position: relative;width: 352px;" oninput="changeY(this)" onchange="changeY(this)">
+        <input type="range" id="rangeX" style="top: 362px; width: 271px; left: calc(20px - 2px); position: absolute;" oninput="changeX(this)" onchange="changeX(this)">
+        <div style="top: calc(362px + 40px);width: 271px;left: 20px;position: absolute;">
+        缩放:<input type="range" id="rangeS" oninput="changeS(this)" onchange="changeS(this)">
+        <br>
+        <br>
+        选择文件:<input type="file" onchange="check(this)"/>
+        <br>
+        复位:<input type="button" onclick="resetXYS()" value="全部复位"/>
+        <br>
+        保存:<input type="button" onclick="saveSticker(true)" value="下载"/><input type="button" onclick="saveSticker(false)" value="输出到页面img"/>
+        <p>支持键盘操作: W (上移图片)<br>, S (下移图片)<br>, A (左移图片)<br>, D (右移图片)<br>, Q (缩小图片)<br>, E (放大图片)
+        <br>
+        <br>
+        <img id="Sticker" />
+        </div>
+        <script>
+        var view=document.getElementById("view");
+        var stickerView=null;
+        var blankSticker=new Image;
+        var selectImage=new Image;
+        var isLoadSelectImage=false;
+        var selectImageY=0;
+        var selectImageX=0;
+        var selectImageS=1.0;
+        
+        function changeY(obj) {
+            selectImageY=obj.value;
+            flashCanvas();
+        }
+        function changeX(obj) {
+            selectImageX=obj.value;
+            flashCanvas();
+        }
+        function changeS(obj) {
+            selectImageS=obj.value/100.0;
+            flashCanvas();
+        }
+        function gary(canvasData) {
+            for ( var x = 0; x < canvasData.width; x++) {
+                for ( var y = 0; y < canvasData.height; y++) {
+
+                    // Index of the pixel in the array
+                    var idx = (x + y * canvasData.width) * 4;
+                    var r = canvasData.data[idx + 0];
+                    var g = canvasData.data[idx + 1];
+                    var b = canvasData.data[idx + 2];
+                    var a = canvasData.data[idx + 3];
+                    // calculate gray scale value
+                    var gray = .299 * r + .587 * g + .114 * b;
+
+                    // assign gray scale value
+                    canvasData.data[idx + 0] = gray; // Red channel
+                    canvasData.data[idx + 1] = gray; // Green channel
+                    canvasData.data[idx + 2] = gray; // Blue channel
+                    canvasData.data[idx + 3] = a; // Alpha channel
+                    
+                    // add black border
+                    /*if(x < 8 || y < 8 || x > (canvasData.width - 8) || y > (canvasData.height - 8)){
+                        canvasData.data[idx + 0] = 255;
+                        canvasData.data[idx + 1] = 255;
+                        canvasData.data[idx + 2] = 255;
+                    }*/
+                }
+            }
+            return canvasData;
+        }
+        function flashCanvas() {
+            var s=document.createElement('canvas');
+            s.width=selectImage.width*Math.abs(selectImageS);
+            s.height=selectImage.height*Math.abs(selectImageS);
+            s.getContext('2d').rect(0,0,selectImage.width*Math.abs(selectImageS),selectImage.height*Math.abs(selectImageS));
+            s.getContext('2d').scale(selectImageS,selectImageS);
+            s.getContext('2d').drawImage(selectImage,0,0)
+            s.getContext('2d').putImageData(gary(s.getContext('2d').getImageData(0, 0, s.width, s.height)),0,0);
+
+            stickerView.getContext('2d').fillStyle='#FFF';
+            stickerView.getContext('2d').fill();
+            stickerView.getContext('2d').drawImage(s,selectImageX,selectImageY);
+            stickerView.getContext('2d').drawImage(blankSticker,0,0,blankSticker.width,blankSticker.height);
+        }
+
+        function createBlankSticker(picUrl){
+            blankSticker.src=picUrl;
+            //加载背景图片
+            blankSticker.onload=function(){
+                //创建画布
+                var c=document.createElement('canvas');
+                c.id="sticker";
+                c.width=this.width;
+                c.height=this.height;
+                c.getContext('2d').rect(0,0,this.width,this.height);
+                c.getContext('2d').fillStyle='#FFF';
+                c.getContext('2d').fill();
+                c.getContext('2d').drawImage(this,0,0,this.width,this.height);
+                stickerView = c;
+                view.innerHTML='';
+                view.appendChild(stickerView);
+                var rangeY=document.getElementById("rangeY");
+                var rangeX=document.getElementById("rangeX");
+                var rangeS=document.getElementById("rangeS");
+                rangeY.min=-(blankSticker.height/2);rangeY.max=blankSticker.height/2;rangeY.value=0;
+                rangeX.min=-(blankSticker.width/2);rangeX.max=blankSticker.width/2;rangeX.value=0;
+                rangeS.min=0;rangeS.max=200;rangeS.step=1;rangeS.value=100;
+            }
+        }
+        function initVars() {
+            selectImageY=0;
+            selectImageX=0;
+            selectImageS=1.0;
+            var rangeY=document.getElementById("rangeY");
+            var rangeX=document.getElementById("rangeX");
+            var rangeS=document.getElementById("rangeS");
+            rangeY.value=0;
+            rangeX.value=0;
+            rangeS.value=100;
+        }
+        function resetXYS() {
+            initVars();
+            flashCanvas();
+        }
+        
+        window.onload=function(){
+            createBlankSticker("./blank_sticker1.png");
+
+        }
+        document.onkeydown=function(event){
+            var rangeY=document.getElementById("rangeY");
+            var rangeX=document.getElementById("rangeX");
+            var rangeS=document.getElementById("rangeS");
+
+            var e = event || window.event || arguments.callee.caller.arguments[0];
+            if(e && e.keyCode==87){ // 按 W 
+                //位置上移
+                if( selectImageY>=-(blankSticker.height/2) && selectImageY<=blankSticker.height/2){
+                    selectImageY-=1;
+                    rangeY.value=selectImageY;
+                    flashCanvas();
+                }
+              }
+            if(e && e.keyCode==83){ // 按 S 
+                //位置下移
+                if( selectImageY>=-(blankSticker.height/2) && selectImageY<=blankSticker.height/2){
+                    selectImageY+=1;
+                    rangeY.value=selectImageY;
+                    flashCanvas();
+                }
+               }            
+            if(e && e.keyCode==65){ // 按 A
+                //位置左移
+                if( selectImageX>=-(blankSticker.width/2) && selectImageX<=blankSticker.width/2){
+                    selectImageX-=1;
+                    rangeX.value=selectImageX;
+                    flashCanvas();
+                }
+            }
+            if(e && e.keyCode==68){ // 按 D
+                //位置右移
+                if( selectImageX>=-(blankSticker.width/2) && selectImageX<=blankSticker.width/2){
+                    selectImageX+=1;
+                    rangeX.value=selectImageX;
+                    flashCanvas();
+                }
+            }
+            if(e && e.keyCode==81){ // 按 Q
+                //缩小
+                if( parseInt(rangeS.value)>=parseInt(rangeS.min) && parseInt(rangeS.value)<=parseInt(rangeS.max)){
+                    rangeS.value=parseInt(rangeS.value)-1;
+                    selectImageS=rangeS.value/100.0;
+                    flashCanvas();
+                }
+            }
+            if(e && e.keyCode==69){ // 按 E
+                //放大
+                if(parseInt(rangeS.value)>=parseInt(rangeS.min) && parseInt(rangeS.value)<=parseInt(rangeS.max)){
+                    rangeS.value=parseInt(rangeS.value)+1;
+                    selectImageS=rangeS.value/100.0;
+                    flashCanvas();
+                }
+            }
+        };
+        function check(obj){
+            var filepath=obj.value.toLowerCase();
+            filepath=filepath.substring(filepath.lastIndexOf('.')+1,filepath.length);
+            if(filepath != 'jpg' && filepath != 'jpeg' && filepath != 'png' && filepath != 'bmp' && filepath != 'webp' && filepath != 'svg')
+                alert("只支持JPG,JPEG,PNG,BMP格式的图片");
+            else if(window.FileReader){
+                var fr = new FileReader();
+                fr.onloadend = function(e){
+                    selectImage.src = e.target.result;
+                    selectImage.crossOrigin="anonymous";
+                    selectImage.onload=function(){
+                        isLoadSelectImage=true;
+                        initVars();
+                        flashCanvas();
+                    }
+                };
+                fr.readAsDataURL(obj.files[0]); 
+            }
+        }
+        function saveSticker(isDownload) {
+            if(isDownload)
+                window.open(stickerView.toDataURL("image/png"));
+            else{
+                var stickerImage=document.getElementById("Sticker");
+                stickerImage.src=stickerView.toDataURL("image/png");
+            }
+
+        }
+        </script>
+    </body>
+</html>
